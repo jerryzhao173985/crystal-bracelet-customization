@@ -58,8 +58,8 @@ function SidePalette({ beads, visible, x, y, onMouseEnter, onMouseLeave, onSelec
     <div
       style={{
         position: 'fixed',
-        left: x + 48,
-        top: y - 60,
+        left: x,
+        top: y,
         zIndex: 1000,
         background: '#fff',
         borderRadius: 16,
@@ -145,10 +145,17 @@ function BraceletCanvas({ bracelet, onBeadClick, onBeadDrop, paletteBeads }) {
   const handleBeadHover = (index, cx, cy) => {
     setHoveredIndex(index);
     setPaletteOpen(true);
-    // Convert SVG coords to screen coords
-    if (beadDomRef.current) {
-      const rect = beadDomRef.current.getBoundingClientRect();
-      setPaletteAnchor({ x: rect.right, y: rect.top + rect.height / 2 });
+    // Convert SVG (cx, cy) to screen coordinates
+    const svg = document.querySelector('svg');
+    if (svg) {
+      const pt = svg.createSVGPoint();
+      pt.x = cx + 32; // offset to the right of the bead
+      pt.y = cy;
+      const screenCTM = svg.getScreenCTM();
+      if (screenCTM) {
+        const transformed = pt.matrixTransform(screenCTM);
+        setPaletteAnchor({ x: transformed.x, y: transformed.y - 40 });
+      }
     }
     if (closeTimeout.current) {
       clearTimeout(closeTimeout.current);
